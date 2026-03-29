@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroBio — Plateforme Phytosanitaire</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f5f5f7; --white:#fff; --border:rgba(0,0,0,0.08); --border-s:rgba(0,0,0,0.14);
+  --ink:#1d1d1f; --ink2:#3a3a3c; --muted:#6e6e73; --faint:#f5f5f7;
+  --green:#1a7a3c; --gl:rgba(26,122,60,0.08); --gm:rgba(26,122,60,0.18); --gb:#34c759;
+  --amber:#ff9500; --al:rgba(255,149,0,0.1);
+  --red:#ff3b30; --rl:rgba(255,59,48,0.08);
+  --teal:#0a8080; --tl:rgba(10,128,128,0.08);
+  --blue:#007aff; --bl:rgba(0,122,255,0.08);
+  --purple:#5856d6; --pl:rgba(88,86,214,0.08);
+  --sh1:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
+  --sh2:0 4px 16px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.04);
+  --sh3:0 12px 40px rgba(0,0,0,0.10),0 4px 8px rgba(0,0,0,0.05);
+  --r:16px; --rs:10px; --rp:100px;
+  --sidebar:240px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+body{background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:var(--sidebar);
+  background:var(--white);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:100;
+  transition:transform .3s cubic-bezier(.16,1,.3,1);
+}
+
+.sb-logo{
+  padding:28px 22px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.sb-logo-mark{
+  width:34px;height:34px;border-radius:9px;
+  background:linear-gradient(135deg,var(--green),#2d9d5c);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;box-shadow:var(--sh1);flex-shrink:0;
+}
+.sb-logo-text h1{font-family:'Libre Baskerville',serif;font-size:1rem;font-weight:700;color:var(--ink);letter-spacing:-.02em;line-height:1;}
+.sb-logo-text p{font-family:'DM Mono',monospace;font-size:0.5rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:3px;}
+
+.sb-section{padding:16px 12px 6px;}
+.sb-label{font-family:'DM Mono',monospace;font-size:0.52rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(0,0,0,0.25);padding:0 10px;margin-bottom:4px;}
+
+.sb-item{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-radius:9px;cursor:pointer;transition:all .15s;margin-bottom:2px;
+  border:1.5px solid transparent;font-size:.82rem;color:var(--muted);font-weight:500;
+}
+.sb-item:hover{background:var(--faint);color:var(--ink);}
+.sb-item.on{background:var(--gl);border-color:var(--gm);color:var(--green);font-weight:600;}
+.sb-item-icon{
+  width:28px;height:28px;border-radius:7px;display:flex;align-items:center;
+  justify-content:center;font-size:.85rem;flex-shrink:0;background:var(--faint);
+  transition:all .15s;
+}
+.sb-item.on .sb-item-icon{background:var(--gl);}
+.sb-item-badge{
+  margin-left:auto;font-family:'DM Mono',monospace;font-size:.52rem;
+  padding:2px 6px;border-radius:var(--rp);background:var(--gl);color:var(--green);
+}
+
+.sb-footer{margin-top:auto;padding:16px;border-top:1px solid var(--border);}
+.sb-status{display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);}
+.sb-dot{width:6px;height:6px;border-radius:50%;background:var(--gb);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar);min-height:100vh;}
+
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(255,255,255,.88);backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid var(--border);
+  padding:0 32px;height:52px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.tb-left{display:flex;align-items:center;gap:12px;}
+.burger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:4px;}
+.burger span{display:block;width:18px;height:1.5px;background:var(--ink);border-radius:2px;}
+.tb-title{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-pill{font-family:'DM Mono',monospace;font-size:.6rem;padding:5px 12px;border-radius:var(--rp);background:var(--gl);color:var(--green);border:1px solid var(--gm);}
+
+/* ── OVERLAY ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:99;}
+.overlay.on{display:block;}
+
+/* ── PAGES ── */
+.page{display:none;padding:32px;animation:fup .25s ease;}
+.page.on{display:block;}
+@keyframes fup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── HOME ── */
+.home-hero{padding:40px 0 36px;max-width:640px;}
+.hero-eye{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--green);background:var(--gl);border:1px solid var(--gm);
+  padding:5px 12px;border-radius:var(--rp);margin-bottom:16px;
+}
+.home-hero h2{
+  font-family:'Libre Baskerville',serif;
+  font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:700;
+  letter-spacing:-.03em;line-height:1.2;color:var(--ink);margin-bottom:14px;
+}
+.home-hero h2 em{color:var(--green);font-style:italic;font-weight:400;}
+.home-hero p{font-size:.95rem;color:var(--muted);line-height:1.75;margin-bottom:28px;}
+
+.mod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:36px;}
+
+.mod-card{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--r);
+  padding:22px;cursor:pointer;transition:all .2s;box-shadow:var(--sh1);
+  display:flex;flex-direction:column;gap:12px;
+}
+.mod-card:hover{transform:translateY(-3px);border-color:transparent;box-shadow:var(--sh3);}
+.mod-card-top{display:flex;align-items:center;justify-content:space-between;}
+.mod-ico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;}
+.ico-g{background:var(--gl);} .ico-t{background:var(--tl);} .ico-a{background:var(--al);}
+.ico-r{background:var(--rl);} .ico-p{background:var(--pl);} .ico-b{background:var(--bl);}
+.mod-arr{color:var(--muted);font-size:.9rem;transition:transform .15s;}
+.mod-card:hover .mod-arr{transform:translateX(3px);color:var(--green);}
+.mod-title{font-family:'Libre Baskerville',serif;font-size:.95rem;font-weight:700;color:var(--ink);}
+.mod-desc{font-size:.78rem;color:var(--muted);line-height:1.6;}
+
+.home-stats{display:flex;gap:28px;flex-wrap:wrap;padding:24px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh1);}
+.hst{text-align:center;flex:1;min-width:80px;}
+.hst-n{font-family:'Libre Baskerville',serif;font-size:1.8rem;font-weight:700;color:var(--green);line-height:1;}
+.hst-l{font-size:.72rem;color:var(--muted);font-weight:500;margin-top:4px;}
+
+/* ── SECTION HEADER ── */
+.sec-head{margin-bottom:24px;}
+.sec-head h2{font-family:'Libre Baskerville',serif;font-size:1.5rem;font-weight:700;letter-spacing:-.02em;margin-bottom:5px;}
+.sec-head p{font-size:.88rem;color:var(--muted);}
+
+/* ── CARD ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:26px;margin-bottom:18px;box-shadow:var(--sh1);}
+
+/* ── FORMS ── */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:580px){.fgrid{grid-template-columns:1fr;}}
+.field{display:flex;flex-direction:column;gap:7px;}
+.field.full{grid-column:1/-1;}
+.flbl{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+
+select,input[type=text],textarea{
+  background:var(--faint);border:1.5px solid transparent;border-radius:var(--rs);
+  color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;
+  padding:10px 14px;transition:all .2s;width:100%;appearance:none;outline:none;
+}
+select:focus,input[type=text]:focus,textarea:focus{background:var(--white);border-color:var(--gm);box-shadow:0 0 0 3px var(--gl);}
+select option{background:var(--white);}
+textarea{resize:vertical;min-height:96px;line-height:1.6;}
+textarea::placeholder,input::placeholder{color:var(--muted);}
+
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+.tag{
+  padding:5px 11px;border-radius:var(--rp);font-size:.72rem;font-family:'DM Mono',monospace;
+  cursor:pointer;border:1.5px solid var(--border);background:transparent;
+  color:var(--muted);transition:all .15s;user-select:none;
+}
+.tag:hover{border-color:var(--gm);color:var(--green);}
+.tag.on{background:var(--gl);border-color:var(--green);color:var(--green);}
+
+.btn{
+  width:100%;padding:13px;background:linear-gradient(135deg,var(--green),#2d9d5c);
+  border:none;border-radius:var(--rs);color:var(--white);
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;font-weight:600;
+  cursor:pointer;transition:all .2s;margin-top:6px;letter-spacing:.01em;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,122,60,.25);}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+
+/* ── LOADER ── */
+.ldr{display:none;text-align:center;padding:48px 0;}
+.ldr.on{display:block;}
+.ldr-ring{width:40px;height:40px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--green);animation:spin .8s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ldr p{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.08em;animation:pulse 1.2s infinite;}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* ── RESULTS ── */
+.res{display:none;animation:fup .35s ease;}
+.res.on{display:block;}
+
+.res-hero{
+  background:linear-gradient(135deg,rgba(26,122,60,.06),rgba(255,255,255,.98));
+  border:1px solid var(--gm);border-radius:var(--r);padding:26px;margin-bottom:14px;
+}
+.rh-lbl{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:10px;}
+.rh-title{font-family:'Libre Baskerville',serif;font-size:1.5rem;font-weight:700;letter-spacing:-.02em;margin-bottom:4px;}
+.rh-sci{font-size:.85rem;font-style:italic;color:var(--muted);margin-bottom:14px;}
+.rh-desc{font-size:.88rem;color:var(--ink2);line-height:1.75;}
+.rh-pills{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px;}
+.rpill{font-size:.72rem;font-weight:600;padding:4px 11px;border-radius:var(--rp);border:1.5px solid transparent;}
+.rp-g{background:var(--gl);color:var(--green);border-color:var(--gm);}
+.rp-a{background:var(--al);color:var(--amber);border-color:rgba(255,149,0,.25);}
+.rp-r{background:var(--rl);color:var(--red);border-color:rgba(255,59,48,.25);}
+.rp-t{background:var(--tl);color:var(--teal);border-color:rgba(10,128,128,.25);}
+
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+@media(max-width:580px){.rgrid{grid-template-columns:1fr;}}
+.rcrd{background:var(--white);border:1px solid var(--border);border-radius:var(--rs);padding:18px;box-shadow:var(--sh1);}
+.rcrd.full{grid-column:1/-1;}
+.rcrd h3{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:10px;}
+.rcrd p,.rcrd li{font-size:.84rem;line-height:1.75;color:var(--ink2);}
+.rcrd ul{list-style:none;}
+.rcrd li{padding-left:14px;position:relative;margin-bottom:3px;}
+.rcrd li::before{content:'•';position:absolute;left:0;color:var(--green);}
+
+.sev-row{display:flex;align-items:center;gap:10px;margin-top:8px;}
+.sev-track{flex:1;height:4px;background:var(--border);border-radius:100px;overflow:hidden;}
+.sev-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--gb));border-radius:100px;transition:width 1s ease;width:0%;}
+.sev-pct{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--green);}
+
+.btn-reset{
+  font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.08em;
+  padding:8px 16px;background:transparent;border:1px solid var(--border);
+  border-radius:var(--rs);color:var(--muted);cursor:pointer;transition:all .15s;margin-top:14px;
+}
+.btn-reset:hover{color:var(--ink);border-color:var(--border-s);}
+
+/* ── CALCULATEUR STEPS ── */
+.steps{display:flex;gap:0;margin-bottom:24px;position:relative;}
+.steps::before{content:'';position:absolute;top:18px;left:18px;right:18px;height:1px;background:var(--border);z-index:0;}
+.step{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;position:relative;z-index:1;}
+.step-n{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.68rem;background:var(--white);border:1.5px solid var(--border);color:var(--muted);transition:all .2s;box-shadow:var(--sh1);}
+.step.on .step-n{background:var(--gl);border-color:var(--green);color:var(--green);}
+.step.done .step-n{background:var(--green);border-color:var(--green);color:var(--white);}
+.step-l{font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:center;}
+.step.on .step-l{color:var(--green);}
+.step.done .step-l{color:var(--ink2);}
+
+.ccard{display:none;}
+.ccard.on{display:block;animation:fup .25s ease;}
+
+.opt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:18px;}
+.opt{
+  padding:14px 12px;border:1.5px solid var(--border);border-radius:var(--rs);
+  background:transparent;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:.82rem;cursor:pointer;transition:all .2s;text-align:left;
+  display:flex;flex-direction:column;gap:4px;
+}
+.opt:hover{border-color:var(--gm);color:var(--ink);background:var(--gl);}
+.opt.on{border-color:var(--green);background:var(--gl);color:var(--green);}
+.opt-ico{font-size:1.2rem;}
+.opt-lbl{font-weight:700;font-size:.8rem;line-height:1.2;}
+.opt-sub{font-size:.68rem;color:var(--muted);font-style:italic;}
+.opt.on .opt-sub{color:rgba(26,122,60,.7);}
+
+.range-g{margin-bottom:18px;}
+.range-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.range-top span{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
+.range-top strong{font-family:'Libre Baskerville',serif;font-size:1rem;color:var(--green);}
+input[type=range]{width:100%;-webkit-appearance:none;height:4px;border-radius:100px;background:linear-gradient(90deg,var(--green) var(--fill,50%),var(--border) var(--fill,50%));outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px var(--gl);cursor:pointer;}
+
+.chk-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
+.chk{display:flex;align-items:center;gap:12px;padding:12px 16px;border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s;user-select:none;}
+.chk:hover{border-color:var(--gm);}
+.chk.on{border-color:var(--gm);background:var(--gl);}
+.chk-box{width:18px;height:18px;border:1.5px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:.7rem;}
+.chk.on .chk-box{background:var(--green);border-color:var(--green);color:var(--white);}
+.chk-txt strong{display:block;font-size:.86rem;color:var(--ink);font-weight:500;}
+.chk-txt small{font-size:.74rem;color:var(--muted);}
+
+.btn-row{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+.btn-sec{padding:10px 20px;background:transparent;border:1px solid var(--border);border-radius:var(--rs);color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:all .15s;}
+.btn-sec:hover{color:var(--ink);border-color:var(--border-s);}
+.btn-pri{padding:10px 24px;background:var(--green);border:none;border-radius:var(--rs);color:var(--white);font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-pri:hover{background:#156830;transform:translateY(-1px);}
+
+.eff-list{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+.eff-row{display:grid;grid-template-columns:160px 1fr 44px;align-items:center;gap:12px;}
+@media(max-width:480px){.eff-row{grid-template-columns:100px 1fr 36px;}}
+.eff-lbl{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);}
+.eff-track{height:4px;background:var(--border);border-radius:100px;overflow:hidden;}
+.eff-bar{height:100%;border-radius:100px;transition:width 1s cubic-bezier(.16,1,.3,1);width:0%;}
+.eff-pct{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--green);text-align:right;}
+
+/* ── MÉTÉO ── */
+.wx-hero{
+  background:linear-gradient(135deg,var(--tl),rgba(255,255,255,.98));
+  border:1px solid rgba(10,128,128,.2);border-radius:var(--r);padding:28px;
+  margin-bottom:18px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;
+}
+@media(max-width:540px){.wx-hero{grid-template-columns:1fr;}}
+.wx-loc{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.08em;color:var(--teal);margin-bottom:8px;}
+.wx-temp{font-family:'Libre Baskerville',serif;font-size:3.2rem;font-weight:700;color:var(--ink);line-height:1;}
+.wx-desc{font-size:.88rem;color:var(--muted);margin-top:5px;}
+.wx-ico{font-size:3.5rem;text-align:right;}
+.wx-pills{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px;}
+
+.wx-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;margin-bottom:18px;}
+.wxs{background:var(--white);border:1px solid var(--border);border-radius:var(--rs);padding:14px;text-align:center;box-shadow:var(--sh1);}
+.wxs-ico{font-size:1.3rem;margin-bottom:5px;}
+.wxs-val{font-family:'Libre Baskerville',serif;font-size:1.2rem;font-weight:700;color:var(--ink);}
+.wxs-lbl{font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+
+.advice-list{display:flex;flex-direction:column;gap:10px;}
+.adv{display:flex;gap:12px;padding:14px;border-radius:var(--rs);border-left:3px solid;}
+.adv.info{background:var(--tl);border-color:var(--teal);}
+.adv.warn{background:var(--al);border-color:var(--amber);}
+.adv.alert{background:var(--rl);border-color:var(--red);}
+.adv.good{background:var(--gl);border-color:var(--green);}
+.adv-ico{font-size:1rem;flex-shrink:0;margin-top:1px;}
+.adv-txt{font-size:.84rem;color:var(--ink2);line-height:1.65;}
+.adv-txt strong{color:var(--ink);display:block;margin-bottom:2px;font-size:.86rem;}
+
+/* ── CARTE ── */
+.map-wrap{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:18px;box-shadow:var(--sh1);}
+.map-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.map-head h3{font-family:'Libre Baskerville',serif;font-size:1rem;font-weight:700;}
+.map-filters{display:flex;gap:6px;flex-wrap:wrap;}
+.mfp{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border-radius:var(--rp);border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;}
+.mfp.on{background:var(--gl);border-color:var(--gm);color:var(--green);}
+.map-svg-area{padding:20px;background:var(--faint);position:relative;}
+.africa-map{width:100%;max-width:480px;display:block;margin:0 auto;}
+.cp{fill:rgba(26,122,60,.07);stroke:rgba(26,122,60,.2);stroke-width:1;cursor:pointer;transition:fill .2s;}
+.cp:hover{fill:rgba(26,122,60,.18);}
+.cp.ch{fill:rgba(255,59,48,.15);stroke:rgba(255,59,48,.4);}
+.cp.cm{fill:rgba(255,149,0,.12);stroke:rgba(255,149,0,.35);}
+.cp.cl{fill:rgba(26,122,60,.08);stroke:rgba(26,122,60,.25);}
+.map-tt{position:absolute;background:rgba(255,255,255,.97);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-size:.8rem;pointer-events:none;display:none;z-index:10;max-width:180px;box-shadow:var(--sh2);}
+.map-tt h4{font-size:.84rem;color:var(--green);margin-bottom:3px;font-weight:700;}
+.map-tt p{color:var(--muted);font-size:.76rem;line-height:1.5;}
+
+.disease-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+.dcrd{background:var(--white);border:1px solid var(--border);border-radius:var(--rs);padding:16px 18px;box-shadow:var(--sh1);transition:all .15s;cursor:default;}
+.dcrd:hover{box-shadow:var(--sh2);transform:translateY(-2px);}
+.dcrd-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.dcrd-name{font-weight:700;font-size:.86rem;color:var(--ink);}
+.dcrd-badge{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.05em;padding:3px 8px;border-radius:var(--rp);}
+.badge-h{background:var(--rl);color:var(--red);border:1px solid rgba(255,59,48,.25);}
+.badge-m{background:var(--al);color:var(--amber);border:1px solid rgba(255,149,0,.25);}
+.badge-l{background:var(--gl);color:var(--green);border:1px solid var(--gm);}
+.dcrd-reg{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);margin-bottom:6px;}
+.dcrd-desc{font-size:.78rem;color:var(--ink2);line-height:1.55;}
+
+/* ── FICHES ── */
+.topics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:28px;}
+.tcrd{background:var(--white);border:1px solid var(--border);border-radius:var(--rs);padding:20px;cursor:pointer;transition:all .2s;box-shadow:var(--sh1);border-left:3px solid transparent;}
+.tcrd:hover{transform:translateY(-2px);box-shadow:var(--sh2);}
+.tc-rust{border-left-color:#ff6b6b;} .tc-teal{border-left-color:var(--teal);}
+.tc-amber{border-left-color:var(--amber);} .tc-green{border-left-color:var(--green);}
+.tc-purple{border-left-color:var(--purple);} .tc-blue{border-left-color:var(--blue);}
+.tc-ico{font-size:1.5rem;margin-bottom:9px;}
+.tc-title{font-family:'Libre Baskerville',serif;font-size:.95rem;font-weight:700;margin-bottom:5px;}
+.tc-desc{font-size:.76rem;color:var(--muted);line-height:1.5;}
+.tc-meta{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap;}
+.tc-pill{font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.05em;padding:3px 8px;border-radius:3px;background:var(--faint);color:var(--muted);border:1px solid var(--border);}
+
+.fiche-detail{display:none;}
+.fiche-detail.on{display:block;animation:fup .3s ease;}
+.fiche-back{display:inline-flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:8px 14px;border:1.5px solid var(--border);border-radius:var(--rs);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;margin-bottom:22px;}
+.fiche-back:hover{color:var(--ink);border-color:var(--border-s);}
+
+.fiche-doc{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:18px;box-shadow:var(--sh2);}
+.fd-top{padding:22px 26px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+.fd-lbl{font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.fd-title{font-family:'Libre Baskerville',serif;font-size:1.3rem;font-weight:700;letter-spacing:-.02em;}
+.fd-sub{font-size:.84rem;font-style:italic;color:var(--muted);margin-top:4px;}
+.diff-pill{font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.06em;padding:4px 11px;border-radius:var(--rp);border:1.5px solid;white-space:nowrap;}
+.dp-base{color:var(--teal);border-color:rgba(10,128,128,.3);}
+.dp-inter{color:var(--amber);border-color:rgba(255,149,0,.3);}
+.dp-adv{color:var(--red);border-color:rgba(255,59,48,.3);}
+.fd-body{padding:22px 26px;}
+.fd-sec{margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--border);}
+.fd-sec:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.fd-sec h2{font-family:'Libre Baskerville',serif;font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:9px;display:flex;align-items:center;gap:7px;}
+.fd-sec .fsn{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);font-weight:300;}
+.fd-sec p,.fd-sec li{font-size:.84rem;line-height:1.75;color:var(--ink2);}
+.fd-sec ul{list-style:none;}
+.fd-sec li{padding-left:14px;position:relative;margin-bottom:3px;}
+.fd-sec li::before{content:'•';position:absolute;left:0;color:var(--green);}
+.key-note{background:var(--gl);border-left:3px solid var(--green);border-radius:0 var(--rs) var(--rs) 0;padding:11px 15px;margin:10px 0;}
+.key-note p{font-size:.82rem;color:var(--ink2);}
+.key-note strong{color:var(--green);}
+.ftable{width:100%;border-collapse:collapse;margin:10px 0;font-size:.8rem;}
+.ftable th{background:var(--gl);color:var(--green);font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;text-align:left;font-weight:400;}
+.ftable td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--ink2);vertical-align:top;}
+.ftable tr:last-child td{border-bottom:none;}
+
+.quiz-wrap{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh1);}
+.quiz-top{background:var(--gl);border-bottom:1px solid var(--gm);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.quiz-top h3{font-family:'Libre Baskerville',serif;font-size:.95rem;font-weight:700;color:var(--green);}
+.quiz-score{font-family:'DM Mono',monospace;font-size:.58rem;color:rgba(26,122,60,.7);}
+.quiz-body{padding:22px;}
+.qi{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border);animation:fup .2s ease;}
+.qi:last-of-type{border-bottom:none;}
+.qi-num{font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.qi-q{font-family:'Libre Baskerville',serif;font-size:.92rem;font-weight:700;color:var(--ink);margin-bottom:11px;line-height:1.4;}
+.qi-opts{display:flex;flex-direction:column;gap:6px;}
+.qi-opt{padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--rs);background:transparent;color:var(--ink2);font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;cursor:pointer;transition:all .15s;text-align:left;display:flex;align-items:center;gap:10px;width:100%;}
+.qi-opt:hover:not(:disabled){border-color:var(--gm);color:var(--ink);background:var(--gl);}
+.qi-opt.correct{border-color:var(--green);background:var(--gl);color:var(--green);}
+.qi-opt.wrong{border-color:var(--red);background:var(--rl);color:var(--red);}
+.qi-opt:disabled{cursor:not-allowed;}
+.qi-ltr{font-family:'DM Mono',monospace;font-size:.65rem;font-weight:700;width:20px;height:20px;border-radius:4px;background:var(--faint);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.qi-opt.correct .qi-ltr{background:var(--green);color:var(--white);}
+.qi-opt.wrong .qi-ltr{background:var(--red);color:var(--white);}
+.qi-exp{display:none;margin-top:10px;padding:10px 13px;background:var(--faint);border-radius:var(--rs);font-size:.78rem;color:var(--ink2);line-height:1.6;border-left:2px solid var(--green);}
+.qi-exp.on{display:block;}
+.score-res{display:none;text-align:center;padding:32px 20px;}
+.score-res.on{display:block;}
+.score-circle{width:80px;height:80px;border-radius:50%;border:2px solid var(--green);background:var(--gl);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;flex-direction:column;}
+.sc-n{font-family:'Libre Baskerville',serif;font-size:1.6rem;font-weight:700;color:var(--green);line-height:1;}
+.sc-t{font-family:'DM Mono',monospace;font-size:.55rem;color:var(--muted);}
+.sc-msg{font-family:'Libre Baskerville',serif;font-size:1.05rem;color:var(--ink);margin-bottom:5px;}
+.sc-sub{font-size:.8rem;color:var(--muted);margin-bottom:18px;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.on{transform:translateX(0);}
+  .main{margin-left:0;}
+  .burger{display:flex;}
+  .page{padding:20px 16px;}
+  .topbar{padding:0 16px;}
+}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSB()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-mark">🌿</div>
+    <div class="sb-logo-text">
+      <h1>AgroBio</h1>
+      <p>Plateforme phytosanitaire</p>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-label">Navigation</div>
+    <div class="sb-item on" onclick="goPage('home',this,'Accueil')">
+      <div class="sb-item-icon">🏠</div> Accueil
+    </div>
+    <div class="sb-item" onclick="goPage('diag',this,'Identificateur IA')">
+      <div class="sb-item-icon">🔍</div> Identificateur
+    </div>
+    <div class="sb-item" onclick="goPage('calc',this,'Calculateur Biologique')">
+      <div class="sb-item-icon">⚖️</div> Calculateur bio
+    </div>
+    <div class="sb-item" onclick="goPage('meteo',this,'Météo & Conseils')">
+      <div class="sb-item-icon">🌤️</div> Météo & Conseils
+    </div>
+    <div class="sb-item" onclick="goPage('carte',this,'Carte des Maladies')">
+      <div class="sb-item-icon">🗺️</div> Carte des maladies
+    </div>
+    <div class="sb-item" onclick="goPage('fiches',this,'Fiches de Cours')">
+      <div class="sb-item-icon">📚</div> Fiches de cours
+    </div>
+    <a href="encyclopedie.html" class="sb-item" style="text-decoration:none;">
+      <div class="sb-item-icon">📖</div> Encyclopédie
+      <span class="sb-item-badge">30+</span>
+    </a>
+  </div>
+
+  <div class="sb-footer">
+    <div class="sb-status"><div class="sb-dot"></div> IA · En ligne</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="burger" onclick="toggleSB()"><span></span><span></span><span></span></div>
+      <div class="tb-title" id="tbTitle">Accueil</div>
+    </div>
+    <div class="tb-right">
+      <div class="tb-pill">⚡ Claude IA</div>
+    </div>
+  </div>
+
+  <!-- ═══ HOME ═══ -->
+  <div class="page on" id="page-home">
+    <div class="home-hero">
+      <div class="hero-eye">🌿 Plateforme agrobiologique</div>
+      <h2>La référence IA<br>pour <em>l'agronomie</em><br>francophone</h2>
+      <p>Diagnostiquez vos cultures, calculez vos agents biologiques, consultez la météo agricole et suivez les épidémies — tout en un seul endroit, gratuitement.</p>
+    </div>
+
+    <div class="mod-grid">
+      <div class="mod-card" onclick="goPage('diag',null,'Identificateur IA')">
+        <div class="mod-card-top"><div class="mod-ico ico-g">🔍</div><div class="mod-arr">→</div></div>
+        <div class="mod-title">Identificateur IA</div>
+        <div class="mod-desc">Décris les symptômes, l'IA identifie le bioagresseur en secondes</div>
+      </div>
+      <div class="mod-card" onclick="goPage('calc',null,'Calculateur Biologique')">
+        <div class="mod-card-top"><div class="mod-ico ico-t">⚖️</div><div class="mod-arr">→</div></div>
+        <div class="mod-title">Calculateur Biologique</div>
+        <div class="mod-desc">Trouve l'agent de lutte biologique optimal pour ton contexte</div>
+      </div>
+      <div class="mod-card" onclick="goPage('meteo',null,'Météo & Conseils')">
+        <div class="mod-card-top"><div class="mod-ico ico-a">🌤️</div><div class="mod-arr">→</div></div>
+        <div class="mod-title">Météo & Conseils</div>
+        <div class="mod-desc">Conditions météo et recommandations agronomiques saisonnières</div>
+      </div>
+      <div class="mod-card" onclick="goPage('carte',null,'Carte des Maladies')">
+        <div class="mod-card-top"><div class="mod-ico ico-r">🗺️</div><div class="mod-arr">→</div></div>
+        <div class="mod-title">Carte des Maladies</div>
+        <div class="mod-desc">Alertes phytosanitaires et épidémies par région en Afrique</div>
+      </div>
+      <div class="mod-card" onclick="goPage('fiches',null,'Fiches de Cours')">
+        <div class="mod-card-top"><div class="mod-ico ico-p">📚</div><div class="mod-arr">→</div></div>
+        <div class="mod-title">Fiches de Cours</div>
+        <div class="mod-desc">Cours ABE Licence 2 avec quiz d'auto-évaluation interactifs</div>
+      </div>
+      <div class="mod-card" onclick="window.location='encyclopedie.html'">
+        <div class="mod-card-top"><div class="mod-ico ico-b">📖</div><div class="mod-arr">→</div></div>
+        <div class="mod-title">Encyclopédie</div>
+        <div class="mod-desc">30+ insectes ravageurs — taxonomie, biologie, biorépulsifs</div>
+      </div>
+    </div>
+
+    <div class="home-stats">
+      <div class="hst"><div class="hst-n">6</div><div class="hst-l">Modules actifs</div></div>
+      <div class="hst"><div class="hst-n">30+</div><div class="hst-l">Espèces répertoriées</div></div>
+      <div class="hst"><div class="hst-n">6</div><div class="hst-l">Fiches de cours</div></div>
+      <div class="hst"><div class="hst-n">∞</div><div class="hst-l">Diagnostics IA</div></div>
+      <div class="hst"><div class="hst-n">100%</div><div class="hst-l">Gratuit</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ IDENTIFICATEUR ═══ -->
+  <div class="page" id="page-diag">
+    <div class="sec-head">
+      <h2>🔍 Identificateur de Bioagresseurs</h2>
+      <p>Décris les symptômes observés — l'IA identifie le bioagresseur responsable</p>
+    </div>
+    <div class="card" id="diagForm">
+      <div class="fgrid">
+        <div class="field">
+          <div class="flbl">Culture</div>
+          <select id="dCrop">
+            <option value="">— Sélectionner —</option>
+            <optgroup label="Céréales"><option>Blé</option><option>Maïs</option><option>Riz</option><option>Sorgho</option></optgroup>
+            <optgroup label="Légumineuses"><option>Arachide</option><option>Niébé</option><option>Soja</option></optgroup>
+            <optgroup label="Légumes"><option>Tomate</option><option>Oignon</option><option>Chou</option><option>Laitue</option><option>Poivron</option></optgroup>
+            <optgroup label="Fruits"><option>Manguier</option><option>Agrumes</option><option>Bananier</option></optgroup>
+            <optgroup label="Autres"><option>Coton</option><option>Canne à sucre</option><option>Autre</option></optgroup>
+          </select>
+        </div>
+        <div class="field">
+          <div class="flbl">Stade végétatif</div>
+          <select id="dStage">
+            <option value="">— Sélectionner —</option>
+            <option>Germination</option><option>Plantule</option><option>Croissance végétative</option>
+            <option>Floraison</option><option>Fructification</option><option>Maturité</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="flbl">Organe atteint</div>
+          <select id="dOrgan">
+            <option value="">— Sélectionner —</option>
+            <option>Feuilles</option><option>Tiges</option><option>Racines</option>
+            <option>Fruits</option><option>Fleurs</option><option>Plante entière</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="flbl">Étendue</div>
+          <select id="dExtent">
+            <option value="">— Sélectionner —</option>
+            <option>Quelques plants</option><option>Tache &lt;10%</option>
+            <option>Foyer 10–40%</option><option>Généralisé &gt;40%</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="margin-top:4px;">
+        <div class="flbl">Symptômes rapides</div>
+        <div class="tags" id="dTags">
+          <span class="tag" onclick="this.classList.toggle('on')">Jaunissement</span>
+          <span class="tag" onclick="this.classList.toggle('on')">Nécrose brune</span>
+          <span class="tag" onclick="this.classList.toggle('on')">Taches circulaires</span>
+          <span class="tag" onclick="this.classList.toggle('on')">Flétrissement</span>
+          <span class="tag" onclick="this.classList.toggle('on')">Défoliation</span>
+          <span class="tag" onclick="this.classList.toggle('on')">Galeries / mines</span>
+          <span class="tag" onclick="this.classList.toggle('on')">Pustules orange</span>
+          <span class="tag" onclick="this.classList.toggle('on')">Moisissure grise</span>
+          <span class="tag" onclick="this.classList.toggle('on')">Insectes visibles</span>
+          <span class="tag" onclick="this.classList.toggle('on')">Enroulement feuilles</span>
+          <span class="tag" onclick="this.classList.toggle('on')">Pourriture racinaire</span>
+          <span class="tag" onclick="this.classList.toggle('on')">Mosaïque</span>
+        </div>
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <div class="flbl">Description détaillée</div>
+        <textarea id="dSymptoms" placeholder="Décris les symptômes : couleur des lésions, évolution, présence d'insectes, conditions récentes..."></textarea>
+      </div>
+      <button class="btn" onclick="runDiag()" id="diagBtn">Analyser avec l'IA →</button>
+    </div>
+    <div class="ldr" id="diagLdr"><div class="ldr-ring"></div><p>Analyse en cours…</p></div>
+    <div class="res" id="diagRes">
+      <div class="res-hero">
+        <div class="rh-lbl">Bioagresseur identifié</div>
+        <div class="rh-title" id="drTitle">—</div>
+        <div class="rh-sci" id="drSci"></div>
+        <div class="rh-desc" id="drDesc"></div>
+        <div class="rh-pills" id="drPills"></div>
+      </div>
+      <div class="rgrid">
+        <div class="rcrd">
+          <h3>Sévérité</h3>
+          <div class="sev-row"><div class="sev-track"><div class="sev-fill" id="drSev"></div></div><span class="sev-pct" id="drSevPct">—</span></div>
+          <p style="margin-top:8px;font-size:.76rem;color:var(--muted);" id="drCond"></p>
+        </div>
+        <div class="rcrd"><h3>Symptômes typiques</h3><ul id="drSympt"></ul></div>
+        <div class="rcrd"><h3>Lutte biologique</h3><ul id="drBio"></ul></div>
+        <div class="rcrd"><h3>Méthodes culturales</h3><ul id="drCult"></ul></div>
+        <div class="rcrd full"><h3>Diagnostic différentiel</h3><p id="drDiff"></p></div>
+      </div>
+      <button class="btn-reset" onclick="resetDiag()">← Nouvelle analyse</button>
+    </div>
+  </div>
+
+  <!-- ═══ CALCULATEUR ═══ -->
+  <div class="page" id="page-calc">
+    <div class="sec-head">
+      <h2>⚖️ Calculateur de Lutte Biologique</h2>
+      <p>3 étapes pour trouver l'agent de lutte biologique optimal</p>
+    </div>
+    <div class="steps">
+      <div class="step on" id="cs1"><div class="step-n">01</div><div class="step-l">Ravageur</div></div>
+      <div class="step" id="cs2"><div class="step-n">02</div><div class="step-l">Culture</div></div>
+      <div class="step" id="cs3"><div class="step-n">03</div><div class="step-l">Contexte</div></div>
+      <div class="step" id="cs4"><div class="step-n">04</div><div class="step-l">Résultat</div></div>
+    </div>
+    <div class="card ccard on" id="cc1">
+      <div class="flbl" style="margin-bottom:14px;">Étape 01 — Type de bioagresseur</div>
+      <div class="opt-grid">
+        <button class="opt" onclick="selC(this,'cPest','Insecte ravageur')"><span class="opt-ico">🦗</span><span class="opt-lbl">Insecte ravageur</span><span class="opt-sub">Chenilles, pucerons…</span></button>
+        <button class="opt" onclick="selC(this,'cPest','Acarien')"><span class="opt-ico">🕷️</span><span class="opt-lbl">Acarien</span><span class="opt-sub">Tétranyques…</span></button>
+        <button class="opt" onclick="selC(this,'cPest','Champignon pathogène')"><span class="opt-ico">🍄</span><span class="opt-lbl">Champignon</span><span class="opt-sub">Rouille, mildiou…</span></button>
+        <button class="opt" onclick="selC(this,'cPest','Bactérie')"><span class="opt-ico">🦠</span><span class="opt-lbl">Bactérie</span><span class="opt-sub">Pseudomonas…</span></button>
+        <button class="opt" onclick="selC(this,'cPest','Nématode parasite')"><span class="opt-ico">🐛</span><span class="opt-lbl">Nématode</span><span class="opt-sub">Meloidogyne…</span></button>
+        <button class="opt" onclick="selC(this,'cPest','Adventice')"><span class="opt-ico">🌿</span><span class="opt-lbl">Adventice</span><span class="opt-sub">Mauvaises herbes</span></button>
+      </div>
+      <div class="field"><div class="flbl">Nom précis (optionnel)</div><input type="text" id="cPestName" placeholder="Ex : Spodoptera frugiperda…"></div>
+      <div class="btn-row"><button class="btn-pri" onclick="calcStep(2)">Suivant →</button></div>
+    </div>
+    <div class="card ccard" id="cc2">
+      <div class="flbl" style="margin-bottom:14px;">Étape 02 — Culture concernée</div>
+      <div class="opt-grid">
+        <button class="opt" onclick="selC(this,'cCrop','Céréales')"><span class="opt-ico">🌾</span><span class="opt-lbl">Céréales</span><span class="opt-sub">Blé, maïs, riz…</span></button>
+        <button class="opt" onclick="selC(this,'cCrop','Légumineuses')"><span class="opt-ico">🫘</span><span class="opt-lbl">Légumineuses</span><span class="opt-sub">Arachide, niébé…</span></button>
+        <button class="opt" onclick="selC(this,'cCrop','Légumes')"><span class="opt-ico">🥬</span><span class="opt-lbl">Légumes</span><span class="opt-sub">Tomate, chou…</span></button>
+        <button class="opt" onclick="selC(this,'cCrop','Fruits')"><span class="opt-ico">🥭</span><span class="opt-lbl">Fruitiers</span><span class="opt-sub">Manguier, agrumes…</span></button>
+        <button class="opt" onclick="selC(this,'cCrop','Cultures industrielles')"><span class="opt-ico">🌱</span><span class="opt-lbl">Industrielles</span><span class="opt-sub">Coton, canne…</span></button>
+        <button class="opt" onclick="selC(this,'cCrop','Maraîchage')"><span class="opt-ico">🏡</span><span class="opt-lbl">Maraîchage</span><span class="opt-sub">Potager mixte</span></button>
+      </div>
+      <div class="btn-row"><button class="btn-sec" onclick="calcStep(1)">← Retour</button><button class="btn-pri" onclick="calcStep(3)">Suivant →</button></div>
+    </div>
+    <div class="card ccard" id="cc3">
+      <div class="flbl" style="margin-bottom:14px;">Étape 03 — Contexte</div>
+      <div class="range-g">
+        <div class="range-top"><span>Niveau d'infestation</span><strong id="cInfV">50%</strong></div>
+        <input type="range" min="5" max="100" value="50" oninput="updR(this,'cInfV','%')" style="--fill:50%">
+      </div>
+      <div class="range-g">
+        <div class="range-top"><span>Budget (1–5)</span><strong id="cBudV">3 / 5</strong></div>
+        <input type="range" min="1" max="5" value="3" oninput="updR(this,'cBudV',' / 5')" id="cBudR" style="--fill:60%">
+      </div>
+      <div class="chk-list">
+        <div class="chk" onclick="this.classList.toggle('on')" data-k="bio"><div class="chk-box">✓</div><div class="chk-txt"><strong>Agriculture biologique</strong><small>Exclut les intrants chimiques</small></div></div>
+        <div class="chk" onclick="this.classList.toggle('on')" data-k="humid"><div class="chk-box">✓</div><div class="chk-txt"><strong>Environnement humide</strong><small>Saison des pluies en cours</small></div></div>
+        <div class="chk" onclick="this.classList.toggle('on')" data-k="aux"><div class="chk-box">✓</div><div class="chk-txt"><strong>Auxiliaires présents</strong><small>Coccinelles, parasitoïdes observés</small></div></div>
+      </div>
+      <div class="btn-row"><button class="btn-sec" onclick="calcStep(2)">← Retour</button><button class="btn-pri" onclick="runCalc()">Calculer →</button></div>
+    </div>
+    <div class="ldr" id="calcLdr"><div class="ldr-ring"></div><p>Calcul des agents optimaux…</p></div>
+    <div class="res" id="calcRes">
+      <div class="res-hero">
+        <div class="rh-lbl">Agent recommandé</div>
+        <div class="rh-title" id="crTitle">—</div>
+        <div class="rh-sci" id="crSci"></div>
+        <div class="rh-desc" id="crDesc"></div>
+        <div class="eff-list" id="crBars"></div>
+      </div>
+      <div class="rgrid">
+        <div class="rcrd"><h3>Mode d'action</h3><p id="crMode"></p></div>
+        <div class="rcrd"><h3>Application</h3><ul id="crApp"></ul></div>
+        <div class="rcrd"><h3>Agents alternatifs</h3><ul id="crAlt"></ul></div>
+        <div class="rcrd"><h3>Mesures complémentaires</h3><ul id="crComp"></ul></div>
+        <div class="rcrd full"><h3>⚠️ Avertissement</h3><p id="crWarn"></p></div>
+      </div>
+      <button class="btn-reset" onclick="resetCalc()">← Nouvelle recommandation</button>
+    </div>
+  </div>
+
+  <!-- ═══ MÉTÉO ═══ -->
+  <div class="page" id="page-meteo">
+    <div class="sec-head">
+      <h2>🌤️ Météo & Conseils Agronomiques</h2>
+      <p>Conditions météo et recommandations adaptées à ta région et saison</p>
+    </div>
+    <div class="card">
+      <div class="fgrid">
+        <div class="field"><div class="flbl">Région</div>
+          <select id="mReg">
+            <option value="">— Sélectionner —</option>
+            <optgroup label="Afrique de l'Ouest">
+              <option>Sénégal — Dakar</option><option>Sénégal — Casamance</option><option>Sénégal — Sahel</option>
+              <option>Mali — Sud</option><option>Burkina Faso</option><option>Côte d'Ivoire</option>
+              <option>Ghana</option><option>Nigeria — Nord</option><option>Niger</option><option>Guinée</option>
+            </optgroup>
+            <optgroup label="Afrique Centrale">
+              <option>Cameroun</option><option>RDC</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="field"><div class="flbl">Saison</div>
+          <select id="mSeas">
+            <option value="">— Sélectionner —</option>
+            <option>Saison sèche (harmattan)</option><option>Début saison des pluies</option>
+            <option>Pleine saison des pluies</option><option>Fin saison des pluies</option>
+          </select>
+        </div>
+        <div class="field"><div class="flbl">Culture principale</div>
+          <select id="mCrop">
+            <option value="">— Sélectionner —</option>
+            <option>Mil / Sorgho</option><option>Maïs</option><option>Riz</option>
+            <option>Arachide</option><option>Niébé</option><option>Tomate</option><option>Oignon</option>
+          </select>
+        </div>
+        <div class="field"><div class="flbl">Stade</div>
+          <select id="mStage">
+            <option value="">— Sélectionner —</option>
+            <option>Préparation du sol</option><option>Semis</option><option>Croissance végétative</option>
+            <option>Floraison</option><option>Fructification</option><option>Récolte</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn" onclick="runMeteo()" id="meteoBtn">Obtenir les conseils →</button>
+    </div>
+    <div class="ldr" id="meteoLdr"><div class="ldr-ring"></div><p>Analyse des conditions…</p></div>
+    <div class="res" id="meteoRes">
+      <div class="wx-hero">
+        <div>
+          <div class="wx-loc" id="mLoc">—</div>
+          <div class="wx-temp" id="mTemp">—</div>
+          <div class="wx-desc" id="mDesc">—</div>
+          <div class="wx-pills" id="mPills"></div>
+        </div>
+        <div class="wx-ico" id="mIco">🌤️</div>
+      </div>
+      <div class="wx-stats" id="mStats"></div>
+      <div class="card">
+        <div class="flbl" style="margin-bottom:14px;">📋 Conseils agronomiques personnalisés</div>
+        <div class="advice-list" id="mAdv"></div>
+      </div>
+      <button class="btn-reset" onclick="resetMeteo()">← Nouvelle recherche</button>
+    </div>
+  </div>
+
+  <!-- ═══ CARTE ═══ -->
+  <div class="page" id="page-carte">
+    <div class="sec-head">
+      <h2>🗺️ Carte des Maladies & Alertes</h2>
+      <p>Suivi phytosanitaire en Afrique de l'Ouest et centrale</p>
+    </div>
+    <div class="map-wrap">
+      <div class="map-head">
+        <h3>Alertes phytosanitaires actives</h3>
+        <div class="map-filters">
+          <button class="mfp on" onclick="fMap(this,'all')">Tout</button>
+          <button class="mfp" onclick="fMap(this,'insecte')">Insectes</button>
+          <button class="mfp" onclick="fMap(this,'fungi')">Champignons</button>
+          <button class="mfp" onclick="fMap(this,'virus')">Virus</button>
+        </div>
+      </div>
+      <div class="map-svg-area">
+        <svg class="africa-map" viewBox="0 0 500 420" xmlns="http://www.w3.org/2000/svg">
+          <path class="cp cl" data-c="Mauritanie" data-a="Faible" data-i="Criquet pèlerin : surveillance active" d="M60,40 L160,40 L170,80 L150,120 L120,130 L80,120 L55,90 Z"/>
+          <path class="cp cm" data-c="Mali" data-a="Modérée" data-i="Chenille légionnaire : foyers localisés au Sud" d="M160,40 L240,40 L260,70 L250,130 L220,150 L170,150 L150,120 L170,80 Z"/>
+          <path class="cp ch" data-c="Niger" data-a="Élevée" data-i="Criquet pèlerin + mildiou mil : alerte rouge" d="M240,40 L320,40 L340,90 L310,150 L260,160 L250,130 L260,70 Z"/>
+          <path class="cp cm" data-c="Sénégal" data-a="Modérée" data-i="Spodoptera frugiperda sur maïs et mil" d="M55,90 L80,120 L90,150 L65,160 L45,140 L40,110 Z"/>
+          <path class="cp cl" data-c="Guinée-Bissau" data-a="Faible" data-i="Situation stable" d="M65,160 L90,150 L95,170 L75,175 Z"/>
+          <path class="cp cl" data-c="Guinée" data-a="Faible" data-i="Mildiou riz : surveillance recommandée" d="M75,175 L95,170 L110,185 L105,210 L80,205 Z"/>
+          <path class="cp cl" data-c="Sierra Leone" data-a="Faible" data-i="Situation stable" d="M80,205 L105,210 L108,225 L85,228 Z"/>
+          <path class="cp cl" data-c="Liberia" data-a="Faible" data-i="Situation stable" d="M85,228 L108,225 L115,245 L90,248 Z"/>
+          <path class="cp cm" data-c="Côte d'Ivoire" data-a="Modérée" data-i="Pourriture brune cacao, chenilles défoliatrices" d="M110,185 L150,180 L165,210 L155,245 L115,245 L108,225 L105,210 Z"/>
+          <path class="cp cl" data-c="Ghana" data-a="Faible" data-i="Surveillance cercosporiose" d="M155,245 L165,210 L185,205 L190,245 Z"/>
+          <path class="cp ch" data-c="Burkina Faso" data-a="Élevée" data-i="Criquet + rouille du sorgho : intervention urgente" d="M120,130 L170,150 L220,150 L215,185 L185,205 L150,180 L110,185 L90,150 Z"/>
+          <path class="cp cl" data-c="Togo" data-a="Faible" data-i="Situation stable" d="M185,205 L190,245 L195,265 L180,260 L178,230 Z"/>
+          <path class="cp cm" data-c="Bénin" data-a="Modérée" data-i="Mosaïque manioc : progression signalée" d="M190,245 L195,265 L205,270 L210,245 L205,210 Z"/>
+          <path class="cp ch" data-c="Nigeria" data-a="Élevée" data-i="Virus mosaïque manioc + chenille légionnaire" d="M205,210 L210,245 L205,270 L230,275 L270,265 L290,230 L280,190 L250,185 L230,175 Z"/>
+          <path class="cp cm" data-c="Cameroun" data-a="Modérée" data-i="Witches' broom cacao. Zones nord : acridiens" d="M280,190 L310,185 L330,210 L320,250 L290,255 L270,265 L290,230 Z"/>
+          <path class="cp cl" data-c="Tchad" data-a="Faible" data-i="Criquet migrateur : veille en cours" d="M310,150 L370,150 L380,200 L340,220 L310,185 Z"/>
+          <path class="cp cm" data-c="RDC" data-a="Modérée" data-i="Mosaïque manioc africaine : surveillance renforcée" d="M290,255 L330,260 L340,300 L300,310 L270,290 Z"/>
+          <g transform="translate(365,18)">
+            <rect x="0" y="0" width="118" height="88" rx="8" fill="white" stroke="rgba(0,0,0,0.08)" stroke-width="1"/>
+            <text x="10" y="17" font-family="monospace" font-size="8" fill="#6e6e73" letter-spacing="1">NIVEAUX D'ALERTE</text>
+            <rect x="10" y="24" width="12" height="9" rx="2" fill="rgba(255,59,48,0.2)" stroke="rgba(255,59,48,0.4)" stroke-width="1"/>
+            <text x="28" y="32" font-family="monospace" font-size="8" fill="#3a3a3c">Élevée</text>
+            <rect x="10" y="40" width="12" height="9" rx="2" fill="rgba(255,149,0,0.15)" stroke="rgba(255,149,0,0.4)" stroke-width="1"/>
+            <text x="28" y="48" font-family="monospace" font-size="8" fill="#3a3a3c">Modérée</text>
+            <rect x="10" y="56" width="12" height="9" rx="2" fill="rgba(26,122,60,0.1)" stroke="rgba(26,122,60,0.3)" stroke-width="1"/>
+            <text x="28" y="64" font-family="monospace" font-size="8" fill="#3a3a3c">Faible</text>
+          </g>
+        </svg>
+        <div class="map-tt" id="mapTT"></div>
+      </div>
+    </div>
+    <div class="disease-grid" id="diseaseGrid"></div>
+  </div>
+
+  <!-- ═══ FICHES ═══ -->
+  <div class="page" id="page-fiches">
+    <div id="fichesList">
+      <div class="sec-head">
+        <h2>📚 Fiches de Cours Interactives</h2>
+        <p>Cours ABE Licence 2 · Régulation naturelle des bioagresseurs de cultures</p>
+      </div>
+      <div class="topics-grid">
+        <div class="tcrd tc-rust" onclick="openFiche('bioag')"><div class="tc-ico">🦠</div><div class="tc-title">Classification des bioagresseurs</div><div class="tc-desc">Ravageurs, pathogènes, adventices — taxonomie complète</div><div class="tc-meta"><span class="tc-pill">Base</span><span class="tc-pill">Chap. 1</span></div></div>
+        <div class="tcrd tc-teal" onclick="openFiche('regul')"><div class="tc-ico">⚖️</div><div class="tc-title">Régulation naturelle</div><div class="tc-desc">Facteurs abiotiques, biotiques, dynamique des populations</div><div class="tc-meta"><span class="tc-pill">Base</span><span class="tc-pill">Chap. 2</span></div></div>
+        <div class="tcrd tc-amber" onclick="openFiche('luttebio')"><div class="tc-ico">🔬</div><div class="tc-title">Lutte biologique</div><div class="tc-desc">Prédation, parasitoïdisme, entomopathogènes</div><div class="tc-meta"><span class="tc-pill">Intermédiaire</span><span class="tc-pill">Chap. 3</span></div></div>
+        <div class="tcrd tc-green" onclick="openFiche('cultgen')"><div class="tc-ico">🌾</div><div class="tc-title">Lutte culturale & génétique</div><div class="tc-desc">Rotation, associations, variétés résistantes</div><div class="tc-meta"><span class="tc-pill">Intermédiaire</span><span class="tc-pill">Chap. 4</span></div></div>
+        <div class="tcrd tc-purple" onclick="openFiche('paysage')"><div class="tc-ico">🗺️</div><div class="tc-title">Conservation du paysage</div><div class="tc-desc">Tscharntke et al. 2016 — gestion de l'habitat</div><div class="tc-meta"><span class="tc-pill">Avancé</span><span class="tc-pill">Chap. 5</span></div></div>
+        <div class="tcrd tc-blue" onclick="openFiche('entomo')"><div class="tc-ico">🍄</div><div class="tc-title">Entomopathogènes</div><div class="tc-desc">Beauveria, Bacillus thuringiensis, baculovirus</div><div class="tc-meta"><span class="tc-pill">Avancé</span><span class="tc-pill">Chap. 6</span></div></div>
+      </div>
+    </div>
+    <div class="fiche-detail" id="ficheDetail">
+      <button class="fiche-back" onclick="closeFiche()">← Retour aux fiches</button>
+      <div class="ldr" id="ficheLdr"><div class="ldr-ring"></div><p>Génération de la fiche…</p></div>
+      <div id="ficheContent"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── API ──
+async function ai(prompt){
+  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})});
+  const d=await r.json();
+  return JSON.parse(d.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
+}
+
+// ── NAV ──
+function goPage(id,navEl,title){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('page-'+id).classList.add('on');
+  document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('on'));
+  if(navEl) navEl.classList.add('on');
+  document.getElementById('tbTitle').textContent=title||id;
+  if(id==='carte') initMap();
+  closeSB();
+}
+function toggleSB(){document.getElementById('sidebar').classList.toggle('on');document.getElementById('overlay').classList.toggle('on');}
+function closeSB(){document.getElementById('sidebar').classList.remove('on');document.getElementById('overlay').classList.remove('on');}
+
+// ── DIAG ──
+async function runDiag(){
+  const crop=document.getElementById('dCrop').value;
+  const sympt=document.getElementById('dSymptoms').value.trim();
+  const tags=[...document.querySelectorAll('#dTags .tag.on')].map(t=>t.textContent).join(', ');
+  if(!crop&&!sympt&&!tags){alert('Remplis au moins la culture ou les symptômes.');return;}
+  document.getElementById('diagBtn').disabled=true;
+  document.getElementById('diagForm').style.display='none';
+  document.getElementById('diagLdr').classList.add('on');
+  document.getElementById('diagRes').classList.remove('on');
+  try{
+    const r=await ai(`Expert phytopathologie. Identifie le bioagresseur :
+Culture: ${crop||'?'} | Stade: ${document.getElementById('dStage').value||'?'} | Organe: ${document.getElementById('dOrgan').value||'?'} | Étendue: ${document.getElementById('dExtent').value||'?'}
+Symptômes: ${tags||'aucun'} | Description: ${sympt||'non fournie'}
+JSON UNIQUEMENT sans backticks: {"bioagresseur":"","nom_scientifique":"","categorie":"","confiance":"Élevée|Moyenne|Faible","description":"","symptomes_typiques":[],"conditions_favorables":"","severite":70,"lutte_biologique":[],"lutte_culturale":[],"diagnostic_differentiel":"","urgence":"Faible|Modérée|Élevée|Critique"}`);
+    document.getElementById('drTitle').textContent=r.bioagresseur||'—';
+    document.getElementById('drSci').textContent=r.nom_scientifique||'';
+    document.getElementById('drDesc').textContent=r.description||'';
+    document.getElementById('drCond').textContent='Conditions favorables : '+(r.conditions_favorables||'—');
+    const uc={Critique:'rp-r',Élevée:'rp-a',Modérée:'rp-t',Faible:'rp-g'};
+    const cc={Élevée:'rp-g',Moyenne:'rp-a',Faible:'rp-r'};
+    document.getElementById('drPills').innerHTML=`<span class="rpill ${cc[r.confiance]||'rp-g'}">Confiance : ${r.confiance}</span><span class="rpill ${uc[r.urgence]||'rp-a'}">Urgence : ${r.urgence}</span><span class="rpill rp-t">${r.categorie}</span>`;
+    const sev=Math.min(100,Math.max(0,r.severite||50));
+    document.getElementById('drSev').style.width=sev+'%';
+    document.getElementById('drSevPct').textContent=sev+'%';
+    document.getElementById('drSympt').innerHTML=(r.symptomes_typiques||[]).map(s=>`<li>${s}</li>`).join('');
+    document.getElementById('drBio').innerHTML=(r.lutte_biologique||[]).map(s=>`<li>${s}</li>`).join('');
+    document.getElementById('drCult').innerHTML=(r.lutte_culturale||[]).map(s=>`<li>${s}</li>`).join('');
+    document.getElementById('drDiff').textContent=r.diagnostic_differentiel||'—';
+    document.getElementById('diagRes').classList.add('on');
+    document.getElementById('diagRes').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){alert('Erreur API.');document.getElementById('diagForm').style.display='block';console.error(e);}
+  finally{document.getElementById('diagBtn').disabled=false;document.getElementById('diagLdr').classList.remove('on');}
+}
+function resetDiag(){document.getElementById('diagRes').classList.remove('on');document.getElementById('diagForm').style.display='block';document.getElementById('dSymptoms').value='';document.getElementById('dCrop').value='';document.querySelectorAll('#dTags .tag').forEach(t=>t.classList.remove('on'));window.scrollTo({top:0,behavior:'smooth'});}
+
+// ── CALC ──
+const cS={cPest:'',cCrop:'',inf:50,bud:3,checks:{}};
+function selC(btn,k,v){btn.closest('.opt-grid').querySelectorAll('.opt').forEach(b=>b.classList.remove('on'));btn.classList.add('on');cS[k]=v;}
+function calcStep(n){[1,2,3].forEach(i=>{document.getElementById('cc'+i).classList.toggle('on',i===n);const s=document.getElementById('cs'+i);s.className='step'+(i===n?' on':(i<n?' done':''));});}
+function updR(el,did,suf){const p=((el.value-el.min)/(el.max-el.min)*100).toFixed(0);el.style.setProperty('--fill',p+'%');document.getElementById(did).textContent=el.value+suf;if(el.id==='cBudR')cS.bud=el.value;else cS.inf=el.value;}
+async function runCalc(){
+  if(!cS.cPest||!cS.cCrop){alert('Complète les étapes précédentes.');return;}
+  [1,2,3].forEach(i=>{document.getElementById('cc'+i).classList.remove('on');document.getElementById('cs'+i).className='step done';});
+  document.getElementById('cs4').className='step on';
+  document.getElementById('calcLdr').classList.add('on');
+  document.getElementById('calcRes').classList.remove('on');
+  const checks=Object.entries(cS.checks).filter(([,v])=>v).map(([k])=>k).join(', ')||'aucune';
+  try{
+    const r=await ai(`Expert lutte biologique. Recommande le meilleur agent pour :
+Bioagresseur: ${cS.cPest}${document.getElementById('cPestName').value?' — '+document.getElementById('cPestName').value:''} | Culture: ${cS.cCrop} | Infestation: ${cS.inf}% | Budget: ${cS.bud}/5 | Conditions: ${checks}
+JSON UNIQUEMENT sans backticks: {"agent_principal":"","nom_scientifique":"","description":"","mode_action":"","efficacite_globale":80,"vitesse_action":60,"persistance":70,"facilite_application":75,"application":[],"agents_alternatifs":[],"mesures_complementaires":[],"avertissement":""}`);
+    document.getElementById('crTitle').textContent=r.agent_principal||'—';
+    document.getElementById('crSci').textContent=r.nom_scientifique||'';
+    document.getElementById('crDesc').textContent=r.description||'';
+    document.getElementById('crMode').textContent=r.mode_action||'';
+    document.getElementById('crWarn').textContent=r.avertissement||'';
+    const bars=[{l:'Efficacité globale',v:r.efficacite_globale,c:'linear-gradient(90deg,var(--teal),#4ecdc4)'},{l:"Vitesse d'action",v:r.vitesse_action,c:'linear-gradient(90deg,var(--amber),#ffd93d)'},{l:'Persistance',v:r.persistance,c:'linear-gradient(90deg,var(--green),var(--gb))'},{l:'Facilité application',v:r.facilite_application,c:'linear-gradient(90deg,var(--purple),#a78bfa)'}];
+    document.getElementById('crBars').innerHTML=bars.map(b=>`<div class="eff-row"><div class="eff-lbl">${b.l}</div><div class="eff-track"><div class="eff-bar" data-w="${b.v}" style="background:${b.c}"></div></div><div class="eff-pct">${b.v}%</div></div>`).join('');
+    setTimeout(()=>{document.querySelectorAll('#crBars .eff-bar').forEach(el=>{el.style.width=el.dataset.w+'%';});},100);
+    document.getElementById('crApp').innerHTML=(r.application||[]).map(a=>`<li>${a}</li>`).join('');
+    document.getElementById('crAlt').innerHTML=(r.agents_alternatifs||[]).map(a=>`<li>${a}</li>`).join('');
+    document.getElementById('crComp').innerHTML=(r.mesures_complementaires||[]).map(a=>`<li>${a}</li>`).join('');
+    document.getElementById('calcRes').classList.add('on');
+    document.getElementById('calcRes').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){alert('Erreur API.');resetCalc();console.error(e);}
+  finally{document.getElementById('calcLdr').classList.remove('on');}
+}
+function resetCalc(){document.getElementById('calcRes').classList.remove('on');document.querySelectorAll('.opt').forEach(b=>b.classList.remove('on'));document.querySelectorAll('.chk').forEach(c=>c.classList.remove('on'));Object.assign(cS,{cPest:'',cCrop:'',inf:50,bud:3,checks:{}});calcStep(1);window.scrollTo({top:0,behavior:'smooth'});}
+
+// ── MÉTÉO ──
+async function runMeteo(){
+  const reg=document.getElementById('mReg').value;const seas=document.getElementById('mSeas').value;
+  if(!reg||!seas){alert('Sélectionne une région et une saison.');return;}
+  document.getElementById('meteoBtn').disabled=true;
+  document.getElementById('meteoLdr').classList.add('on');
+  document.getElementById('meteoRes').classList.remove('on');
+  try{
+    const r=await ai(`Agronome météorologue expert Afrique subsaharienne.
+Région: ${reg} | Saison: ${seas} | Culture: ${document.getElementById('mCrop').value||'générale'} | Stade: ${document.getElementById('mStage').value||'?'}
+JSON UNIQUEMENT sans backticks: {"localisation":"","temperature_min":20,"temperature_max":35,"temperature_moy":28,"humidite":60,"pluviometrie":"150mm/mois","vent":"faible","icone":"🌤️","description_meteo":"","conseils":[{"type":"info|warn|alert|good","titre":"","texte":""}],"indicateurs":[{"icone":"","valeur":"","label":""}]}`);
+    document.getElementById('mLoc').textContent=r.localisation||reg;
+    document.getElementById('mTemp').textContent=(r.temperature_moy||'—')+'°C';
+    document.getElementById('mDesc').textContent=r.description_meteo||'';
+    document.getElementById('mIco').textContent=r.icone||'🌤️';
+    document.getElementById('mPills').innerHTML=`<span class="rpill rp-t">💧 ${r.humidite||'—'}% humidité</span><span class="rpill rp-a">🌧️ ${r.pluviometrie||'—'}</span><span class="rpill rp-g">🌡️ ${r.temperature_min||'—'}–${r.temperature_max||'—'}°C</span>`;
+    document.getElementById('mStats').innerHTML=(r.indicateurs||[]).map(i=>`<div class="wxs"><div class="wxs-ico">${i.icone}</div><div class="wxs-val">${i.valeur}</div><div class="wxs-lbl">${i.label}</div></div>`).join('');
+    document.getElementById('mAdv').innerHTML=(r.conseils||[]).map(c=>`<div class="adv ${c.type}"><div class="adv-ico">${{info:'ℹ️',warn:'⚠️',alert:'🚨',good:'✅'}[c.type]||'💡'}</div><div class="adv-txt"><strong>${c.titre}</strong>${c.texte}</div></div>`).join('');
+    document.getElementById('meteoRes').classList.add('on');
+    document.getElementById('meteoRes').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){alert('Erreur API.');console.error(e);}
+  finally{document.getElementById('meteoBtn').disabled=false;document.getElementById('meteoLdr').classList.remove('on');}
+}
+function resetMeteo(){document.getElementById('meteoRes').classList.remove('on');document.getElementById('mReg').value='';document.getElementById('mSeas').value='';}
+
+// ── CARTE ──
+const diseases=[
+  {name:'Chenille légionnaire (Spodoptera)',region:'Burkina Faso, Mali, Niger',alert:'h',type:'insecte',desc:'Épidémie active sur maïs et mil. Surveillance hebdomadaire recommandée.'},
+  {name:'Criquet pèlerin (Schistocerca)',region:'Niger, Mauritanie, Sahel',alert:'h',type:'insecte',desc:'Essaims signalés. Coordination FAO en cours. Risque de propagation élevé.'},
+  {name:'Virus mosaïque manioc (CMD)',region:'Nigeria, RDC, Cameroun',alert:'h',type:'virus',desc:'Progression rapide. Utiliser des boutures certifiées saines.'},
+  {name:'Rouille du sorgho (Puccinia)',region:'Burkina Faso, Nord Nigeria',alert:'m',type:'fungi',desc:'Conditions humides favorables. Surveiller les parcelles.'},
+  {name:'Mildiou du mil (Sclerospora)',region:'Sénégal, Mali',alert:'m',type:'fungi',desc:'Foyers localisés signalés. Application de Trichoderma recommandée.'},
+  {name:'Pourriture brune cacao',region:"Côte d'Ivoire, Cameroun",alert:'m',type:'fungi',desc:'Saison humide critique. Élagage et fongicides biologiques conseillés.'},
+  {name:'Mosaïque manioc africaine',region:'Bénin, Togo, RDC',alert:'m',type:'virus',desc:'Progression modérée. Rogner les plants malades.'},
+  {name:'Thrips du piment',region:'Sénégal, Guinée',alert:'l',type:'insecte',desc:'Présence faible. Prédateurs naturels suffisants.'},
+];
+let mapFilter='all';
+function initMap(){
+  document.querySelectorAll('.cp').forEach(p=>{
+    p.addEventListener('mouseenter',e=>{
+      const tt=document.getElementById('mapTT');
+      tt.innerHTML=`<h4>${p.dataset.c}</h4><p>Alerte : ${p.dataset.a}<br>${p.dataset.i}</p>`;
+      tt.style.display='block';
+    });
+    p.addEventListener('mousemove',e=>{
+      const wrap=e.target.closest('.map-svg-area');
+      const rect=wrap.getBoundingClientRect();
+      const tt=document.getElementById('mapTT');
+      tt.style.left=(e.clientX-rect.left+12)+'px';
+      tt.style.top=(e.clientY-rect.top-10)+'px';
+    });
+    p.addEventListener('mouseleave',()=>{document.getElementById('mapTT').style.display='none';});
+  });
+  renderDiseases();
+}
+function fMap(btn,type){document.querySelectorAll('.mfp').forEach(b=>b.classList.remove('on'));btn.classList.add('on');mapFilter=type;renderDiseases();}
+function renderDiseases(){
+  const f=mapFilter==='all'?diseases:diseases.filter(d=>d.type===mapFilter);
+  const bc={h:'badge-h',m:'badge-m',l:'badge-l'};
+  const bl={h:'Élevée',m:'Modérée',l:'Faible'};
+  document.getElementById('diseaseGrid').innerHTML=f.map(d=>`<div class="dcrd"><div class="dcrd-top"><div class="dcrd-name">${d.name}</div><div class="dcrd-badge ${bc[d.alert]}">${bl[d.alert]}</div></div><div class="dcrd-reg">📍 ${d.region}</div><div class="dcrd-desc">${d.desc}</div></div>`).join('');
+}
+
+// ── FICHES ──
+const ficheT={
+  bioag:{title:'Classification des bioagresseurs',diff:'Base',topic:'Définitions et classification des bioagresseurs : ravageurs, pathogènes, adventices. Caractéristiques, exemples africains et tropicaux, tableau comparatif.'},
+  regul:{title:'Régulation naturelle des populations',diff:'Base',topic:'Régulation naturelle : facteurs abiotiques, biotiques, dynamique des populations, seuil économique de nuisibilité (SEN), équilibre proie-prédateur.'},
+  luttebio:{title:'Lutte biologique',diff:'Intermédiaire',topic:'Lutte biologique : définition, types, agents (prédateurs, parasitoïdes, entomopathogènes), exemples réussis, classification des parasitoïdes.'},
+  cultgen:{title:'Lutte culturale & génétique',diff:'Intermédiaire',topic:'Lutte culturale : rotation, associations, dates de semis, densité. Génétique : variétés résistantes, mécanismes de résistance.'},
+  paysage:{title:'Conservation du paysage',diff:'Avancé',topic:'Lutte biologique par conservation du paysage selon Tscharntke et al. 2016 : haies, bandes fleuries, corridors écologiques, services écosystémiques.'},
+  entomo:{title:'Organismes entomopathogènes',diff:'Avancé',topic:'Entomopathogènes : Beauveria bassiana, Metarhizium, Bacillus thuringiensis, baculovirus, nématodes (Steinernema, Heterorhabditis).'},
+};
+let quizD=[],quizA={},quizSc=0;
+async function openFiche(key){
+  const t=ficheT[key];
+  document.getElementById('fichesList').style.display='none';
+  document.getElementById('ficheDetail').classList.add('on');
+  document.getElementById('ficheLdr').classList.add('on');
+  document.getElementById('ficheContent').innerHTML='';
+  quizD=[];quizA={};quizSc=0;
+  window.scrollTo({top:0,behavior:'smooth'});
+  try{
+    const r=await ai(`Professeur agrobiologie. Fiche complète niveau Licence 2 ABE sur :
+${t.topic} | Niveau: ${t.diff}
+JSON UNIQUEMENT sans backticks: {"titre":"","resume":"","sections":[{"titre":"","contenu":"","type":"texte|liste|tableau","items":[],"tableau_headers":[],"tableau_rows":[],"point_cle":""}],"mots_cles":[],"quiz":[{"question":"","options":["A. ","B. ","C. ","D. "],"correct":0,"explication":""}]}`);
+    quizD=r.quiz||[];
+    const dm={'Base':'dp-base','Intermédiaire':'dp-inter','Avancé':'dp-adv'};
+    const secs=(r.sections||[]).map((s,i)=>{
+      let body='';
+      if(s.type==='liste'&&s.items?.length) body=`<ul>${s.items.map(it=>`<li>${it}</li>`).join('')}</ul>`;
+      else if(s.type==='tableau'&&s.tableau_rows?.length) body=`<table class="ftable"><thead><tr>${(s.tableau_headers||[]).map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${s.tableau_rows.map(row=>`<tr>${row.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+      else body=`<p>${(s.contenu||'').replace(/\n/g,'<br>')}</p>`;
+      const kn=s.point_cle?`<div class="key-note"><p>💡 <strong>À retenir :</strong> ${s.point_cle}</p></div>`:'';
+      return `<div class="fd-sec"><h2><span class="fsn">${String(i+1).padStart(2,'0')}</span> ${s.titre}</h2>${body}${kn}</div>`;
+    }).join('');
+    const mots=(r.mots_cles||[]).map(m=>`<span class="tc-pill" style="margin:3px;">${m}</span>`).join('');
+    const qHTML=quizD.length?`<div class="quiz-wrap"><div class="quiz-top"><h3>Quiz d'auto-évaluation</h3><div class="quiz-score" id="qSc">0 / ${quizD.length} correctes</div></div><div class="quiz-body">${quizD.map((q,qi)=>`<div class="qi"><div class="qi-num">Question ${qi+1}</div><div class="qi-q">${q.question}</div><div class="qi-opts">${(q.options||[]).map((opt,oi)=>`<button class="qi-opt" onclick="ansQ(${qi},${oi},${q.correct})" id="qo-${qi}-${oi}"><span class="qi-ltr">${['A','B','C','D'][oi]}</span>${opt.replace(/^[A-D]\.\s*/,'')}</button>`).join('')}</div><div class="qi-exp" id="qe-${qi}">${q.explication||''}</div></div>`).join('')}<div class="score-res" id="scoreRes"><div class="score-circle"><div class="sc-n" id="scN">0</div><div class="sc-t">/ ${quizD.length}</div></div><div class="sc-msg" id="scMsg">—</div><div class="sc-sub" id="scSub"></div><button class="btn-reset" onclick="retryQ()" style="margin:4px;">Réessayer</button><button class="btn-reset" onclick="closeFiche()" style="margin:4px;">← Retour</button></div></div></div>`:'';
+    document.getElementById('ficheContent').innerHTML=`<div class="fiche-doc"><div class="fd-top"><div><div class="fd-lbl">Fiche · ABE L2 · USSEIN</div><div class="fd-title">${r.titre||t.title}</div><p class="fd-sub">${r.resume||''}</p></div><div class="diff-pill ${dm[t.diff]||'dp-base'}">${t.diff}</div></div><div class="fd-body">${secs}${mots?`<div style="margin-top:14px;">${mots}</div>`:''}</div></div>${qHTML}`;
+  }catch(e){document.getElementById('ficheContent').innerHTML='<p style="color:var(--red);padding:20px;">Erreur. Réessaie.</p>';console.error(e);}
+  finally{document.getElementById('ficheLdr').classList.remove('on');}
+}
+function ansQ(qi,oi,correct){
+  if(quizA[qi]!==undefined)return;quizA[qi]=oi;
+  document.querySelectorAll(`[id^="qo-${qi}-"]`).forEach((b,i)=>{b.disabled=true;if(i===correct)b.classList.add('correct');else if(i===oi)b.classList.add('wrong');});
+  document.getElementById(`qe-${qi}`).classList.add('on');
+  if(oi===correct)quizSc++;
+  document.getElementById('qSc').textContent=`${quizSc} / ${quizD.length} correctes`;
+  if(Object.keys(quizA).length===quizD.length)setTimeout(showScore,700);
+}
+function showScore(){
+  const pct=Math.round(quizSc/quizD.length*100);
+  document.getElementById('scN').textContent=quizSc;
+  const msgs=[[0,40,'À retravailler 📖','Relis la fiche avant de réessayer.'],[40,70,'Pas mal ! 💪','Quelques notions à consolider.'],[70,90,'Très bien ! 🌿','Bonne maîtrise du cours !'],[90,101,'Excellent ! 🎉','Tu maîtrises ce chapitre !']];
+  const [,,msg,sub]=msgs.find(([a,b])=>pct>=a&&pct<b);
+  document.getElementById('scMsg').textContent=msg;document.getElementById('scSub').textContent=sub;
+  document.getElementById('scoreRes').classList.add('on');
+}
+function retryQ(){quizSc=0;quizA={};document.getElementById('scoreRes').classList.remove('on');document.getElementById('qSc').textContent=`0 / ${quizD.length} correctes`;document.querySelectorAll('.qi-opt').forEach(b=>{b.disabled=false;b.classList.remove('correct','wrong');});document.querySelectorAll('.qi-exp').forEach(e=>e.classList.remove('on'));}
+function closeFiche(){document.getElementById('ficheDetail').classList.remove('on');document.getElementById('fichesList').style.display='block';window.scrollTo({top:0,behavior:'smooth'});}
+</script>
+</body>
+</html>
